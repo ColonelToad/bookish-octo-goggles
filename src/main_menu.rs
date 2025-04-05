@@ -1,13 +1,13 @@
+use gif::{ColorOutput, Decoder};
+use sdl2::pixels::Color;
+use sdl2::rect::Rect;
 use sdl2::render::{Canvas, Texture, TextureCreator};
 use sdl2::ttf::Font;
 use sdl2::video::{Window, WindowContext};
-use sdl2::pixels::Color;
-use sdl2::rect::Rect;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
 use std::time::Instant;
-use gif::{Decoder, ColorOutput};
 
 const SCREEN_WIDTH: u32 = 800;
 const SCREEN_HEIGHT: u32 = 480;
@@ -59,10 +59,10 @@ impl<'a> MainMenu<'a> {
         let mut decoder = Decoder::new(BufReader::new(file)).map_err(|e| e.to_string())?;
         decoder.set_output_color(ColorOutput::RGBA);
         let mut reader = decoder.read_info().map_err(|e| e.to_string())?;
-    
+
         let mut frames = Vec::new();
         let mut frame_durations = Vec::new();
-    
+
         while let Some(frame) = reader.read_next_frame().map_err(|e| e.to_string())? {
             let surface = sdl2::surface::Surface::from_data(
                 &frame.buffer,
@@ -70,18 +70,19 @@ impl<'a> MainMenu<'a> {
                 frame.height.into(),
                 frame.width as u32 * 4,
                 sdl2::pixels::PixelFormatEnum::RGBA32,
-            ).map_err(|e| e.to_string())?;
-    
+            )
+            .map_err(|e| e.to_string())?;
+
             let texture = texture_creator
                 .create_texture_from_surface(&surface)
                 .map_err(|e| e.to_string())?;
-            
+
             frames.push(texture);
             frame_durations.push(frame.delay);
         }
-    
+
         Ok((frames, frame_durations))
-    }    
+    }
 
     pub fn handle_input(&mut self, event: &super::input_handler::InputEvent) {
         match (self.state, event) {
@@ -92,7 +93,10 @@ impl<'a> MainMenu<'a> {
                     _ => self.selected_tab,
                 };
             }
-            (MenuState::OptionSelection(_), super::input_handler::InputEvent::EncoderTurn(1, dir)) => {
+            (
+                MenuState::OptionSelection(_),
+                super::input_handler::InputEvent::EncoderTurn(1, dir),
+            ) => {
                 self.selected_option = match dir.as_str() {
                     "RIGHT" => (self.selected_option + 1) % OPTIONS_PER_TAB,
                     "LEFT" => (self.selected_option + OPTIONS_PER_TAB - 1) % OPTIONS_PER_TAB,
@@ -113,7 +117,7 @@ impl<'a> MainMenu<'a> {
         let elapsed = self.start_time.elapsed().as_millis() as u16;
         let total_time: u16 = self.frame_durations.iter().map(|d| d * 10).sum();
         let cycle_time = elapsed % total_time;
-        
+
         let mut accumulated = 0;
         for (i, &duration) in self.frame_durations.iter().enumerate() {
             accumulated += duration * 10;
@@ -132,34 +136,37 @@ impl<'a> MainMenu<'a> {
         canvas.copy(
             &self.frames[self.current_frame],
             None,
-            Rect::new(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
+            Rect::new(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT),
         )?;
 
         // Draw tabs
         let tab_width = SCREEN_WIDTH / 3;
         for (i, name) in TAB_NAMES.iter().enumerate() {
-            let color = if i == self.selected_tab { 
-                Color::RGB(255, 0, 0) 
-            } else { 
-                Color::RGB(255, 255, 255) 
+            let color = if i == self.selected_tab {
+                Color::RGB(255, 0, 0)
+            } else {
+                Color::RGB(255, 255, 255)
             };
-            
-            let surface = self.font.render(name)
+
+            let surface = self
+                .font
+                .render(name)
                 .solid(color)
                 .map_err(|e| e.to_string())?;
-            
+
             let texture_creator = canvas.texture_creator();
-            let texture = texture_creator.create_texture_from_surface(&surface)
+            let texture = texture_creator
+                .create_texture_from_surface(&surface)
                 .map_err(|e| e.to_string())?;
-            
+
             let query = texture.query();
             let x = (i as u32 * tab_width) + (tab_width - query.width) / 2;
             let y = SCREEN_HEIGHT - 50;
-            
+
             canvas.copy(
                 &texture,
                 None,
-                Rect::new(x as i32, y as i32, query.width, query.height)
+                Rect::new(x as i32, y as i32, query.width, query.height),
             )?;
         }
 
@@ -173,28 +180,31 @@ impl<'a> MainMenu<'a> {
             };
 
             for (i, option) in options.iter().enumerate() {
-                let color = if i == self.selected_option { 
-                    Color::RGB(255, 0, 0) 
-                } else { 
-                    Color::RGB(255, 255, 255) 
+                let color = if i == self.selected_option {
+                    Color::RGB(255, 0, 0)
+                } else {
+                    Color::RGB(255, 255, 255)
                 };
 
-                let surface = self.font.render(option)
+                let surface = self
+                    .font
+                    .render(option)
                     .solid(color)
                     .map_err(|e| e.to_string())?;
-                
-                let texture = canvas.texture_creator()
+
+                let texture = canvas
+                    .texture_creator()
                     .create_texture_from_surface(&surface)
                     .map_err(|e| e.to_string())?;
-                
+
                 let query = texture.query();
                 let x = (SCREEN_WIDTH - query.width) / 2;
                 let y = 100 + (i as u32 * 40);
-                
+
                 canvas.copy(
                     &texture,
                     None,
-                    Rect::new(x as i32, y as i32, query.width, query.height)
+                    Rect::new(x as i32, y as i32, query.width, query.height),
                 )?;
             }
         }
@@ -203,3 +213,4 @@ impl<'a> MainMenu<'a> {
         Ok(())
     }
 }
+

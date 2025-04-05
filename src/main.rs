@@ -1,15 +1,15 @@
 mod input;
-mod ui;
 mod launcher;
+mod ui;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use std::time::Duration;
-use ui::state::UIScreen;
 use ui::main_menu::handle_main_menu_input;
-use ui::welcome::handle_welcome_input;
 use ui::main_menu::InputEvent as MenuInput;
+use ui::mainmenu_renderer::Renderer;
+use ui::state::UIScreen;
+use ui::welcome::handle_welcome_input;
 use ui::welcome::InputEvent as WelcomeInput;
-use ui::renderer::Renderer;
 
 fn main() {
     let sdl_context = sdl2::init().unwrap();
@@ -39,28 +39,39 @@ fn main() {
     'running: loop {
         for event in event_pump.poll_iter() {
             match event {
-                Event::Quit { .. } | Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
-                    break 'running
-                },
-                Event::KeyDown { keycode: Some(Keycode::Return), .. } => {
+                Event::Quit { .. }
+                | Event::KeyDown {
+                    keycode: Some(Keycode::Escape),
+                    ..
+                } => break 'running,
+                Event::KeyDown {
+                    keycode: Some(Keycode::Return),
+                    ..
+                } => {
                     screen = match screen {
                         UIScreen::MainMenu(sel) => handle_main_menu_input(sel, MenuInput::Select),
                         UIScreen::Welcome => handle_welcome_input(WelcomeInput::Button(0)),
                     };
-                },
-                Event::KeyDown { keycode: Some(Keycode::Up), .. } => {
+                }
+                Event::KeyDown {
+                    keycode: Some(Keycode::Up),
+                    ..
+                } => {
                     if let UIScreen::MainMenu(sel) = screen {
                         screen = handle_main_menu_input(sel, MenuInput::Up);
                     }
-                },
-                Event::KeyDown { keycode: Some(Keycode::Down), .. } => {
+                }
+                Event::KeyDown {
+                    keycode: Some(Keycode::Down),
+                    ..
+                } => {
                     if let UIScreen::MainMenu(sel) = screen {
                         screen = handle_main_menu_input(sel, MenuInput::Down);
                     }
-                },
+                }
                 Event::MouseButtonDown { x, y, .. } => {
                     screen = handle_welcome_input(WelcomeInput::Touch(x, y));
-                },
+                }
                 _ => {}
             }
         }
@@ -69,3 +80,4 @@ fn main() {
         std::thread::sleep(Duration::from_millis(16));
     }
 }
+
