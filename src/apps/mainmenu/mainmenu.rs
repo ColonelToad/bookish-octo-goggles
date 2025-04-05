@@ -1,135 +1,34 @@
-// src/applications/mainmenu_renderer.rs
+// src/apps/mainmenu_renderer.rs
 
+// This is the file that actually calls the render pipeline to render the mainmenu you see upon
+// launching the pip-boy, or go to the main menu proper after exiting an app.
+
+// use GlobalRenderer so that we can call the main_menu render function
 use crate::global_renderer::GlobalRenderer;
+// not sure what this does lmao
 use crate::ui::state::UIScreen;
 
-/// Renders the main menu screen using the GlobalRenderer's existing functionality.
-/// This function delegates rendering to GlobalRenderer::render, which, when passed
-/// a UIScreen::MainMenu, internally calls its own render_main_menu function.
-pub fn render_main_menu(renderer: &mut GlobalRenderer, selected: usize) {
-    renderer.render(&UIScreen::MainMenu(selected));
-}
+// to actually render the screen, we probably need this to be here
+pub fn render(&mut self, screen: &UIScreen) {
+    // setting the background color to be really dark green
+    self.canvas.set_draw_color(Color::RGB(0, 30, 0));
+    // after that clearing the rest of it for artifacts
+    self.canvas.clear();
 
-// use crate::ui::state::UIScreen;
-// use sdl2::image::LoadTexture;
-// use sdl2::pixels::Color;
-// use sdl2::rect::Rect;
-// use sdl2::render::Canvas;
-// use sdl2::render::TextureCreator;
-// use sdl2::ttf::Font;
-// use sdl2::video::Window;
-// use sdl2::video::WindowContext;
-//
-// pub struct Renderer<'a> {
-//     pub canvas: Canvas<Window>,
-//     pub texture_creator: &'a TextureCreator<WindowContext>,
-//     pub font: Font<'a, 'static>,
-// }
-//
-// impl<'a> Renderer<'a> {
-//     pub fn render(&mut self, screen: &UIScreen) {
-//         self.canvas.set_draw_color(Color::RGB(0, 30, 0));
-//         self.canvas.clear();
-//
-//         match screen {
-//             UIScreen::Welcome => self.render_welcome(),
-//             UIScreen::MainMenu(selected) => self.render_main_menu(*selected),
-//         }
-//
-//         self.canvas.present();
-//     }
-//
-//     fn render_welcome(&mut self) {
-//         let texture = self.texture_creator.load_texture("assets/sit.png").unwrap();
-//         let query = texture.query();
-//         let (original_width, original_height) = (query.width, query.height);
-//
-//         // Define the resizing percentage (e.g., 0.8 for 80%)
-//         let scale_factor: f32 = 0.8;
-//
-//         // Calculate the new width and height
-//         let width = (original_width as f32 * scale_factor) as u32;
-//         let height = (original_height as f32 * scale_factor) as u32;
-//
-//         let dst = Rect::new(
-//             400 - (width as i32 / 2),
-//             240 - (height as i32 / 2),
-//             width,
-//             height,
-//         );
-//         self.canvas.copy(&texture, None, Some(dst)).unwrap();
-//
-//         let surface = self
-//             .font
-//             .render("WELCOME, USER!")
-//             .blended(Color::GREEN)
-//             .unwrap();
-//         let texture = self
-//             .texture_creator
-//             .create_texture_from_surface(&surface)
-//             .unwrap();
-//         let text_width = surface.width() as i32;
-//         let target = Rect::new(
-//             (800 - text_width) / 2,
-//             50,
-//             surface.width(),
-//             surface.height(),
-//         );
-//         self.canvas.copy(&texture, None, Some(target)).unwrap();
-//
-//         // Bottom options: APPS, PROFILE, SETTINGS
-//         let labels = ["APPS", "PROFILE", "SETTINGS"];
-//         let spacing = 800 / labels.len() as i32;
-//         let y = 440;
-//         let box_height = 40;
-//         let box_width = spacing;
-//
-//         for (i, label) in labels.iter().enumerate() {
-//             let x = i as i32 * spacing;
-//             let surface = self.font.render(label).blended(Color::GREEN).unwrap();
-//             let texture = self
-//                 .texture_creator
-//                 .create_texture_from_surface(&surface)
-//                 .unwrap();
-//
-//             let text_width = surface.width();
-//             let text_height = surface.height();
-//             let text_x = x + (box_width - text_width as i32) / 2;
-//             let text_y = y + (box_height - text_height as i32) / 2;
-//
-//             // Draw bounding box
-//             let rect = Rect::new(x, y, box_width as u32, box_height as u32);
-//             self.canvas.set_draw_color(Color::RGB(0, 100, 0));
-//             self.canvas.fill_rect(rect).unwrap();
-//             self.canvas.set_draw_color(Color::GREEN);
-//             self.canvas.draw_rect(rect).unwrap();
-//
-//             // Draw label centered in the box
-//             let target = Rect::new(text_x, text_y, surface.width(), surface.height());
-//             self.canvas.copy(&texture, None, Some(target)).unwrap();
-//         }
-//     }
-//
-//     fn render_main_menu(&mut self, selected: usize) {
-//         let options = ["Calendar", "Media", "Gallery", "Terminal", "IDE"];
-//
-//         for (i, option) in options.iter().enumerate() {
-//             let y = 100 + (i * 50) as i32;
-//             let surface = self
-//                 .font
-//                 .render(option)
-//                 .blended(if i == selected {
-//                     Color::WHITE
-//                 } else {
-//                     Color::GREEN
-//                 })
-//                 .unwrap();
-//             let texture = self
-//                 .texture_creator
-//                 .create_texture_from_surface(&surface)
-//                 .unwrap();
-//             let target = Rect::new(100, y, surface.width(), surface.height());
-//             self.canvas.copy(&texture, None, Some(target)).unwrap();
-//         }
-//     }
-// }
+    // actually rendering the screen
+    match screen {
+        UIScreen::Welcome => {
+            // rendering the logo with the buttons on the bottom
+            self.render_welcome_screen("assets/sit.png", 0.8, &["APPS", "PROFILE", "SETTINGS"])
+        }
+
+        // rendering what you see after you click enter
+        UIScreen::MainMenu(selected) => self.render_main_menu(
+            *selected,
+            &["Calendar", "Media", "Gallery", "Terminal", "IDE"],
+        ),
+    }
+
+    // pushing it to the screen
+    self.canvas.present();
+}

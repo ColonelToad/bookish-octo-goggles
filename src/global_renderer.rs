@@ -15,23 +15,6 @@ pub struct GlobalRenderer<'a> {
 }
 
 impl<'a> GlobalRenderer<'a> {
-    pub fn render(&mut self, screen: &UIScreen) {
-        self.canvas.set_draw_color(Color::RGB(0, 30, 0));
-        self.canvas.clear();
-
-        match screen {
-            UIScreen::Welcome => {
-                self.render_welcome_screen("assets/sit.png", 0.8, &["APPS", "PROFILE", "SETTINGS"])
-            }
-            UIScreen::MainMenu(selected) => self.render_main_menu(
-                *selected,
-                &["Calendar", "Media", "Gallery", "Terminal", "IDE"],
-            ),
-        }
-
-        self.canvas.present();
-    }
-
     fn render_welcome_screen(&mut self, logo_path: &str, scale_factor: f32, labels: &[&str]) {
         let texture = self.texture_creator.load_texture(logo_path).unwrap();
         let query = texture.query();

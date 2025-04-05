@@ -1,3 +1,4 @@
+mod apps;
 mod global_renderer;
 mod input;
 mod launcher;
@@ -31,11 +32,12 @@ fn main() {
     let mut screen = UIScreen::Welcome;
 
     // Create an instance of your Renderer
-    let mut renderer = GlobalRenderer {
-        canvas,
-        texture_creator: &texture_creator, // Pass a reference to texture_creator
-        font,
-    };
+    // let mut renderer = GlobalRenderer {
+    //     canvas,
+    //     texture_creator: &texture_creator, // Pass a reference to texture_creator
+    //     font,
+    // };
+    let mut renderer = apps::mainmenu;
 
     'running: loop {
         for event in event_pump.poll_iter() {
