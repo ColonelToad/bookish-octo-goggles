@@ -8,13 +8,13 @@ use sdl2::ttf::Font;
 use sdl2::video::Window;
 use sdl2::video::WindowContext;
 
-pub struct GlobalRenderer<'a> {
+pub struct Renderer<'a> {
     pub canvas: Canvas<Window>,
     pub texture_creator: &'a TextureCreator<WindowContext>,
     pub font: Font<'a, 'static>,
 }
 
-impl<'a> GlobalRenderer<'a> {
+impl<'a> Renderer<'a> {
     pub fn render(&mut self, screen: &UIScreen) {
         self.canvas.set_draw_color(Color::RGB(0, 30, 0));
         self.canvas.clear();
