@@ -6,7 +6,7 @@ use sdl2::keyboard::Keycode;
 use std::time::Duration;
 use ui::main_menu::handle_main_menu_input;
 use ui::main_menu::InputEvent as MenuInput;
-use ui::mainmenu_renderer::Renderer;
+// use ui::mainmenu::Renderer;
 use ui::state::UIScreen;
 use ui::welcome::handle_welcome_input;
 use ui::welcome::InputEvent as WelcomeInput;
@@ -80,4 +80,3 @@ fn main() {
         std::thread::sleep(Duration::from_millis(16));
     }
 }
-
