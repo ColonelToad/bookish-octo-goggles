@@ -1,48 +1,71 @@
-mod input_handler;
-mod main_menu;
+mod input;
+mod ui;
+mod launcher;
+use sdl2::event::Event;
+use sdl2::keyboard::Keycode;
+use std::time::Duration;
+use ui::state::UIScreen;
+use ui::main_menu::handle_main_menu_input;
+use ui::welcome::handle_welcome_input;
+use ui::main_menu::InputEvent as MenuInput;
+use ui::welcome::InputEvent as WelcomeInput;
+use ui::renderer::Renderer;
 
-use sdl2::pixels::Color;
-use input_handler::{InputEvent, InputHandler};
-use main_menu::MainMenu;
+fn main() {
+    let sdl_context = sdl2::init().unwrap();
+    let video_subsystem = sdl_context.video().unwrap();
+    let ttf_context = sdl2::ttf::init().unwrap();
 
-fn main() -> Result<(), String> {
-    // Initialize SDL
-    let sdl = sdl2::init()?;
-    let video = sdl.video()?;
-    let ttf_context = sdl2::ttf::init().map_err(|e| e.to_string())?;
-
-    // Create window and canvas
-    let window = video.window("Pi Tablet", 800, 480)
+    let window = video_subsystem
+        .window("Launcher", 800, 480)
         .position_centered()
-        .opengl()
         .build()
-        .map_err(|e| e.to_string())?;
+        .unwrap();
 
-    let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
+    let canvas = window.into_canvas().build().unwrap();
     let texture_creator = canvas.texture_creator();
+    let font = ttf_context.load_font("assets/font.ttf", 24).unwrap();
 
-    // Initialize components
-    let (input_handler, event_rx) = InputHandler::new();
-    let mut main_menu = MainMenu::new(&texture_creator, &ttf_context)?;
+    let mut event_pump = sdl_context.event_pump().unwrap();
+    let mut screen = UIScreen::Welcome;
 
-    // Main loop
-    let mut running = true;
-    while running {
-        // Handle input events
-        while let Ok(event) = event_rx.try_recv() {
+    // Create an instance of your Renderer
+    let mut renderer = Renderer {
+        canvas,
+        texture_creator: &texture_creator, // Pass a reference to texture_creator
+        font,
+    };
+
+    'running: loop {
+        for event in event_pump.poll_iter() {
             match event {
-                InputEvent::ModeChange(mode) => {
-                    println!("Input mode changed to {:?}", mode);
-                }
-                InputEvent::ButtonPress(2) => running = false, // Exit on third button
-                _ => main_menu.handle_input(&event),
+                Event::Quit { .. } | Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
+                    break 'running
+                },
+                Event::KeyDown { keycode: Some(Keycode::Return), .. } => {
+                    screen = match screen {
+                        UIScreen::MainMenu(sel) => handle_main_menu_input(sel, MenuInput::Select),
+                        UIScreen::Welcome => handle_welcome_input(WelcomeInput::Button(0)),
+                    };
+                },
+                Event::KeyDown { keycode: Some(Keycode::Up), .. } => {
+                    if let UIScreen::MainMenu(sel) = screen {
+                        screen = handle_main_menu_input(sel, MenuInput::Up);
+                    }
+                },
+                Event::KeyDown { keycode: Some(Keycode::Down), .. } => {
+                    if let UIScreen::MainMenu(sel) = screen {
+                        screen = handle_main_menu_input(sel, MenuInput::Down);
+                    }
+                },
+                Event::MouseButtonDown { x, y, .. } => {
+                    screen = handle_welcome_input(WelcomeInput::Touch(x, y));
+                },
+                _ => {}
             }
         }
 
-        // Update and render
-        main_menu.update();
-        main_menu.draw(&mut canvas)?;
+        renderer.render(&screen);
+        std::thread::sleep(Duration::from_millis(16));
     }
-
-    Ok(())
 }
