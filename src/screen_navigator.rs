@@ -8,9 +8,9 @@ use sd12 :: render :: TextureQuery;
 //Import main
 use crate :: main :: {SCREEN_WIDTH, SCREEN_HEIGHT, Tab, create_text_texture};
 
-const TabNames: [&str; 4] = ["MAIN", "APPS", "SETTINGS", "PROFILES"]; 
+const TAB_NAMES: [&str; 4] = ["MAIN", "APPS", "SETTINGS", "PROFILES"]; 
 
-pub struct Screen <'a> {
+pub struct Screen <'a> { 
 
     //Currently active tab
     pub active_tab: Tab,
@@ -65,5 +65,4 @@ impl <'a> Screen <'a> {
         false
     }
 }
-   
-        
+
