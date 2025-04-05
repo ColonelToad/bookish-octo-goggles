@@ -21,7 +21,7 @@ impl<'a> GlobalRenderer<'a> {
 
         match screen {
             UIScreen::Welcome => {
-                self.render_welcome_screen("assets/logo.png", 0.8, &["APPS", "SETTINGS"])
+                self.render_welcome_screen("assets/sit.png", 0.8, &["APPS", "PROFILE", "SETTINGS"])
             }
             UIScreen::MainMenu(selected) => self.render_main_menu(
                 *selected,
