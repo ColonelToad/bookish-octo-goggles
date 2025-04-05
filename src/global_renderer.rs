@@ -8,32 +8,34 @@ use sdl2::ttf::Font;
 use sdl2::video::Window;
 use sdl2::video::WindowContext;
 
-pub struct Renderer<'a> {
+pub struct GlobalRenderer<'a> {
     pub canvas: Canvas<Window>,
     pub texture_creator: &'a TextureCreator<WindowContext>,
     pub font: Font<'a, 'static>,
 }
 
-impl<'a> Renderer<'a> {
+impl<'a> GlobalRenderer<'a> {
     pub fn render(&mut self, screen: &UIScreen) {
         self.canvas.set_draw_color(Color::RGB(0, 30, 0));
         self.canvas.clear();
 
         match screen {
-            UIScreen::Welcome => self.render_welcome(),
-            UIScreen::MainMenu(selected) => self.render_main_menu(*selected),
+            UIScreen::Welcome => {
+                self.render_welcome_screen("assets/logo.png", 0.8, &["APPS", "SETTINGS"])
+            }
+            UIScreen::MainMenu(selected) => self.render_main_menu(
+                *selected,
+                &["Calendar", "Media", "Gallery", "Terminal", "IDE"],
+            ),
         }
 
         self.canvas.present();
     }
 
-    fn render_welcome(&mut self) {
-        let texture = self.texture_creator.load_texture("assets/sit.png").unwrap();
+    fn render_welcome_screen(&mut self, logo_path: &str, scale_factor: f32, labels: &[&str]) {
+        let texture = self.texture_creator.load_texture(logo_path).unwrap();
         let query = texture.query();
         let (original_width, original_height) = (query.width, query.height);
-
-        // Define the resizing percentage (e.g., 0.8 for 80%)
-        let scale_factor: f32 = 0.8;
 
         // Calculate the new width and height
         let width = (original_width as f32 * scale_factor) as u32;
@@ -66,7 +68,6 @@ impl<'a> Renderer<'a> {
         self.canvas.copy(&texture, None, Some(target)).unwrap();
 
         // Bottom options: APPS, PROFILE, SETTINGS
-        let labels = ["APPS", "PROFILE", "SETTINGS"];
         let spacing = 800 / labels.len() as i32;
         let y = 440;
         let box_height = 40;
@@ -98,9 +99,7 @@ impl<'a> Renderer<'a> {
         }
     }
 
-    fn render_main_menu(&mut self, selected: usize) {
-        let options = ["Calendar", "Media", "Gallery", "Terminal", "IDE"];
-
+    fn render_main_menu(&mut self, selected: usize, options: &[&str]) {
         for (i, option) in options.iter().enumerate() {
             let y = 100 + (i * 50) as i32;
             let surface = self

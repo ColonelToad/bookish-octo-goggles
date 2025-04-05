@@ -1,12 +1,13 @@
+mod global_renderer;
 mod input;
 mod launcher;
 mod ui;
+use global_renderer::GlobalRenderer;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use std::time::Duration;
 use ui::main_menu::handle_main_menu_input;
 use ui::main_menu::InputEvent as MenuInput;
-use ui::mainmenu_renderer::Renderer;
 use ui::state::UIScreen;
 use ui::welcome::handle_welcome_input;
 use ui::welcome::InputEvent as WelcomeInput;
@@ -30,7 +31,7 @@ fn main() {
     let mut screen = UIScreen::Welcome;
 
     // Create an instance of your Renderer
-    let mut renderer = Renderer {
+    let mut renderer = GlobalRenderer {
         canvas,
         texture_creator: &texture_creator, // Pass a reference to texture_creator
         font,
