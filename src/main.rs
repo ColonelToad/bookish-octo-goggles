@@ -80,4 +80,3 @@ fn main() {
         std::thread::sleep(Duration::from_millis(16));
     }
 }
-
