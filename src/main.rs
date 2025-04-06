@@ -73,7 +73,7 @@ fn main() {
 
         // Create window and canvas
         let window = video_subsystem
-            .window("PipBoy", 800, 600)
+            .window("PipBoy", 800, 480)
             .position_centered()
             .build()
             .unwrap();
