@@ -1,135 +1,221 @@
-// src/applications/mainmenu_renderer.rs
-
-use crate::global_renderer::GlobalRenderer;
 use crate::ui::state::UIScreen;
+use sdl2::image::LoadTexture;
+use sdl2::pixels::Color;
+use sdl2::rect::Rect;
+use sdl2::render::Canvas;
+use sdl2::video::Window;
 
-/// Renders the main menu screen using the GlobalRenderer's existing functionality.
-/// This function delegates rendering to GlobalRenderer::render, which, when passed
-/// a UIScreen::MainMenu, internally calls its own render_main_menu function.
-pub fn render_main_menu(renderer: &mut GlobalRenderer, selected: usize) {
-    renderer.render(&UIScreen::MainMenu(selected));
+pub struct MainMenu<'a> {
+    canvas: Canvas<Window>,
+    texture_creator: sdl2::render::TextureCreator<sdl2::video::WindowContext>,
+    font: sdl2::ttf::Font<'a, 'static>,
 }
 
-// use crate::ui::state::UIScreen;
-// use sdl2::image::LoadTexture;
-// use sdl2::pixels::Color;
-// use sdl2::rect::Rect;
-// use sdl2::render::Canvas;
-// use sdl2::render::TextureCreator;
-// use sdl2::ttf::Font;
-// use sdl2::video::Window;
-// use sdl2::video::WindowContext;
-//
-// pub struct Renderer<'a> {
-//     pub canvas: Canvas<Window>,
-//     pub texture_creator: &'a TextureCreator<WindowContext>,
-//     pub font: Font<'a, 'static>,
-// }
-//
-// impl<'a> Renderer<'a> {
-//     pub fn render(&mut self, screen: &UIScreen) {
-//         self.canvas.set_draw_color(Color::RGB(0, 30, 0));
-//         self.canvas.clear();
-//
-//         match screen {
-//             UIScreen::Welcome => self.render_welcome(),
-//             UIScreen::MainMenu(selected) => self.render_main_menu(*selected),
-//         }
-//
-//         self.canvas.present();
-//     }
-//
-//     fn render_welcome(&mut self) {
-//         let texture = self.texture_creator.load_texture("assets/sit.png").unwrap();
-//         let query = texture.query();
-//         let (original_width, original_height) = (query.width, query.height);
-//
-//         // Define the resizing percentage (e.g., 0.8 for 80%)
-//         let scale_factor: f32 = 0.8;
-//
-//         // Calculate the new width and height
-//         let width = (original_width as f32 * scale_factor) as u32;
-//         let height = (original_height as f32 * scale_factor) as u32;
-//
-//         let dst = Rect::new(
-//             400 - (width as i32 / 2),
-//             240 - (height as i32 / 2),
-//             width,
-//             height,
-//         );
-//         self.canvas.copy(&texture, None, Some(dst)).unwrap();
-//
-//         let surface = self
-//             .font
-//             .render("WELCOME, USER!")
-//             .blended(Color::GREEN)
-//             .unwrap();
-//         let texture = self
-//             .texture_creator
-//             .create_texture_from_surface(&surface)
-//             .unwrap();
-//         let text_width = surface.width() as i32;
-//         let target = Rect::new(
-//             (800 - text_width) / 2,
-//             50,
-//             surface.width(),
-//             surface.height(),
-//         );
-//         self.canvas.copy(&texture, None, Some(target)).unwrap();
-//
-//         // Bottom options: APPS, PROFILE, SETTINGS
-//         let labels = ["APPS", "PROFILE", "SETTINGS"];
-//         let spacing = 800 / labels.len() as i32;
-//         let y = 440;
-//         let box_height = 40;
-//         let box_width = spacing;
-//
-//         for (i, label) in labels.iter().enumerate() {
-//             let x = i as i32 * spacing;
-//             let surface = self.font.render(label).blended(Color::GREEN).unwrap();
-//             let texture = self
-//                 .texture_creator
-//                 .create_texture_from_surface(&surface)
-//                 .unwrap();
-//
-//             let text_width = surface.width();
-//             let text_height = surface.height();
-//             let text_x = x + (box_width - text_width as i32) / 2;
-//             let text_y = y + (box_height - text_height as i32) / 2;
-//
-//             // Draw bounding box
-//             let rect = Rect::new(x, y, box_width as u32, box_height as u32);
-//             self.canvas.set_draw_color(Color::RGB(0, 100, 0));
-//             self.canvas.fill_rect(rect).unwrap();
-//             self.canvas.set_draw_color(Color::GREEN);
-//             self.canvas.draw_rect(rect).unwrap();
-//
-//             // Draw label centered in the box
-//             let target = Rect::new(text_x, text_y, surface.width(), surface.height());
-//             self.canvas.copy(&texture, None, Some(target)).unwrap();
-//         }
-//     }
-//
-//     fn render_main_menu(&mut self, selected: usize) {
-//         let options = ["Calendar", "Media", "Gallery", "Terminal", "IDE"];
-//
-//         for (i, option) in options.iter().enumerate() {
-//             let y = 100 + (i * 50) as i32;
-//             let surface = self
-//                 .font
-//                 .render(option)
-//                 .blended(if i == selected {
-//                     Color::WHITE
-//                 } else {
-//                     Color::GREEN
-//                 })
-//                 .unwrap();
-//             let texture = self
-//                 .texture_creator
-//                 .create_texture_from_surface(&surface)
-//                 .unwrap();
-//             let target = Rect::new(100, y, surface.width(), surface.height());
-//             self.canvas.copy(&texture, None, Some(target)).unwrap();
-//         }
-//     }
-// }
+impl<'a> MainMenu<'a> {
+    pub fn new(canvas: Canvas<Window>, ttf_context: &'a sdl2::ttf::Sdl2TtfContext) -> Self {
+        let texture_creator = canvas.texture_creator();
+
+        // Load a font for rendering text - adjust path as needed for your project
+        let font = ttf_context
+            .load_font("assets/font.ttf", 16)
+            .expect("Could not load font");
+
+        MainMenu {
+            canvas,
+            texture_creator,
+            font,
+        }
+    }
+
+    pub fn render(&mut self, screen: &UIScreen) {
+        // Setting the background color to be really dark green
+        self.canvas.set_draw_color(Color::RGB(0, 30, 0));
+        // Clearing the screen to remove artifacts
+        self.canvas.clear();
+
+        // Actually rendering the screen
+        match screen {
+            UIScreen::Welcome => {
+                // Rendering the logo with the buttons on the bottom
+                self.render_welcome_screen("assets/sit.png", 0.8, &["APPS", "PROFILE", "SETTINGS"])
+            }
+
+            // Rendering what you see after you click enter
+            UIScreen::MainMenu(selected) => self.render_main_menu(
+                *selected,
+                &["Calendar", "Media", "Gallery", "Terminal", "IDE"],
+            ),
+        }
+
+        // Pushing it to the screen
+        self.canvas.present();
+    }
+
+    fn render_welcome_screen(&mut self, image_path: &str, scale: f32, buttons: &[&str]) {
+        // Load the logo image
+        let texture = self
+            .texture_creator
+            .load_texture(image_path)
+            .expect("Failed to load logo image");
+
+        // Get dimensions
+        let query = texture.query();
+        let width = (query.width as f32 * scale) as u32;
+        let height = (query.height as f32 * scale) as u32;
+
+        // Center the image
+        let (canvas_width, canvas_height) = self.canvas.output_size().unwrap();
+        let dest_rect = Rect::new(
+            ((canvas_width - width) / 2) as i32,
+            ((canvas_height - height) / 3) as i32, // Position at top third
+            width,
+            height,
+        );
+
+        // Render the logo
+        self.canvas
+            .copy(&texture, None, Some(dest_rect))
+            .expect("Failed to render logo");
+
+        // Render buttons at the bottom
+        let button_height = 40;
+        let button_padding = 20;
+        let total_button_width = buttons.len() as u32 * 120; // Assuming 120px per button
+        let start_x = (canvas_width - total_button_width) / 2;
+
+        for (i, &button_text) in buttons.iter().enumerate() {
+            let button_rect = Rect::new(
+                (start_x + i as u32 * 120) as i32,
+                (canvas_height - button_height - button_padding) as i32,
+                120,
+                button_height,
+            );
+
+            // Draw button background
+            self.canvas.set_draw_color(Color::RGB(0, 60, 0));
+            self.canvas
+                .fill_rect(button_rect)
+                .expect("Failed to render button background");
+
+            // Render button text
+            let surface = self
+                .font
+                .render(button_text)
+                .blended(Color::RGB(0, 255, 0))
+                .expect("Could not render text");
+
+            let text_texture = self
+                .texture_creator
+                .create_texture_from_surface(&surface)
+                .expect("Could not create texture from surface");
+
+            let text_query = text_texture.query();
+            let text_rect = Rect::new(
+                button_rect.x() + ((button_rect.width() - text_query.width) / 2) as i32,
+                button_rect.y() + ((button_rect.height() - text_query.height) / 2) as i32,
+                text_query.width,
+                text_query.height,
+            );
+
+            self.canvas
+                .copy(&text_texture, None, Some(text_rect))
+                .expect("Failed to render button text");
+        }
+    }
+
+    fn render_main_menu(&mut self, selected: usize, options: &[&str]) {
+        // Get canvas dimensions
+        let (canvas_width, canvas_height) = self.canvas.output_size().unwrap();
+
+        // Render header
+        let header_text = "PIP-BOY MAIN MENU";
+        let surface = self
+            .font
+            .render(header_text)
+            .blended(Color::RGB(0, 255, 0))
+            .expect("Could not render header text");
+
+        let header_texture = self
+            .texture_creator
+            .create_texture_from_surface(&surface)
+            .expect("Could not create texture from surface");
+
+        let header_query = header_texture.query();
+        let header_rect = Rect::new(
+            (canvas_width - header_query.width) as i32 / 2,
+            50,
+            header_query.width,
+            header_query.height,
+        );
+
+        self.canvas
+            .copy(&header_texture, None, Some(header_rect))
+            .expect("Failed to render header");
+
+        // Render menu options
+        let item_height = 40;
+        let item_spacing = 10;
+        let total_height = options.len() as u32 * (item_height + item_spacing);
+        let start_y = (canvas_height - total_height) / 2;
+
+        for (i, &option_text) in options.iter().enumerate() {
+            let is_selected = i == selected;
+
+            // Set color based on selection
+            let text_color = if is_selected {
+                Color::RGB(255, 255, 0) // Yellow for selected
+            } else {
+                Color::RGB(0, 200, 0) // Green for unselected
+            };
+
+            // Draw item background if selected
+            let item_rect = Rect::new(
+                (canvas_width / 4) as i32,
+                (start_y + i as u32 * (item_height + item_spacing)) as i32,
+                canvas_width / 2,
+                item_height,
+            );
+
+            if is_selected {
+                self.canvas.set_draw_color(Color::RGB(0, 60, 0));
+                self.canvas
+                    .fill_rect(item_rect)
+                    .expect("Failed to render item background");
+            }
+
+            // Render option text
+            let surface = self
+                .font
+                .render(option_text)
+                .blended(text_color)
+                .expect("Could not render option text");
+
+            let text_texture = self
+                .texture_creator
+                .create_texture_from_surface(&surface)
+                .expect("Could not create texture from surface");
+
+            let text_query = text_texture.query();
+            let text_rect = Rect::new(
+                (canvas_width / 2 - text_query.width / 2) as i32,
+                item_rect.y() + ((item_rect.height() - text_query.height) / 2) as i32,
+                text_query.width,
+                text_query.height,
+            );
+
+            self.canvas
+                .copy(&text_texture, None, Some(text_rect))
+                .expect("Failed to render option text");
+
+            // Draw selected indicator
+            if is_selected {
+                let indicator_rect =
+                    Rect::new((canvas_width / 4 - 20) as i32, text_rect.y(), 10, 10);
+                self.canvas.set_draw_color(Color::RGB(255, 255, 0));
+                self.canvas
+                    .fill_rect(indicator_rect)
+                    .expect("Failed to render selection indicator");
+            }
+        }
+    }
+}
