@@ -63,11 +63,30 @@ fn main () -> Result<(), Box <dyn Error>> {
     println!("Output config: {:?}", config);
 
     match config.sample_format() {
-        cpal :: SampleFormat :: F32 => run_stream :: <f32>(&device, config.into(), samples)?,
+        SampleFormat :: F32 => run_stream :: <f32>(&device, config, samples)?,
         _ => return Err("Unsupported sample format".into()),
     }
-
     
-
+    Ok(()) 
 
 }
+
+//Streams audio until all samples are played
+fn run_stream<T> (
+    device:  &cpal :: Device,
+    config: &streamCOnfig,
+    samples: Vec<f32>,
+    playback_finished: Arc<AtomicBool>,
+) -> Result<(), Box<dyn Error>>
+where   
+    T: Sample + From<f32>,
+    {
+        let sample_mut_protector = Arc :: new(Mutex :: new(samples.into_iter()));
+
+        let err_msg = |err| eprintln!("an error occurred on stream: {}", err);
+
+        let stream = device.build_output_stream (
+            &config,
+            
+        )
+    }

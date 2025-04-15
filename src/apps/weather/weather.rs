@@ -76,8 +76,7 @@ async fn main() -> Result <(), Box<dyn Error>> {
     let hourly_entry = response_simplified.hourly_entry();
 
     for entry in hourly_entry {
-        println!("Hour: {}", entry.hour);
-        println!("Temperature: {}°F, Precipitation Chance: {}%", entry.temperature_2m, entry.precipitation_probability);
+        println!("Hour: {}, Temperature: {}°F, Precipitation Chance: {}%",entry.hour, entry.temperature_2m, entry.precipitation_probability);
     }
     Ok(())
 }
