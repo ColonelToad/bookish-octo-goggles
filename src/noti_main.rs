@@ -3,7 +3,7 @@ mod ui;
 
 // Import these instead of creating them as mods
 // Later you can create these files as needed
-//mod apps;
+mod apps;
 mod input;
 mod launcher;
 
@@ -11,7 +11,7 @@ use rusb::{Context, UsbContext};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use std::time::Duration;
-use sysinfo::{DiskExt, System, SystemExt};
+use sysinfo::{System, SystemExt};
 use ui::global_renderer::GlobalRenderer;
 use ui::main_menu::handle_main_menu_input;
 use ui::main_menu::InputEvent as MenuInput;
