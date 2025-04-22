@@ -1,7 +1,5 @@
-// src/ui/state.rs
-
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub enum UIScreen {
     Welcome,
-    MainMenu(usize),
+    MainMenu(u8), // 0 = APPS, 1 = PROFILE, 2 = SETTINGS
 }

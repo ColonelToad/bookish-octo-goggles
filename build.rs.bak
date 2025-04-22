@@ -1,0 +1,17 @@
+fn main() {
+    cc::Build::new()
+        .cpp(true)
+        .include("cpp/include")
+        .include("/usr/include/SDL2")
+        .file("cpp/src/main_menu.cpp")
+        .file("cpp/src/welcome.cpp")
+        .file("cpp/src/screens.cpp")
+        .file("cpp/src/ui_bridge.cpp") // Include if it defines C functions
+        .file("cpp/src/launcher_bridge.cpp") // Include if needed
+        .flag_if_supported("-std=c++17")
+        .compile("ui_cpp");
+
+    // 👇 This tells Cargo where the compiled .a is and to link it
+    println!("cargo:rustc-link-search=native={}", std::env::var("OUT_DIR").unwrap());
+    println!("cargo:rustc-link-lib=static=ui_cpp"); // Matches the .compile("ui_cpp")
+}

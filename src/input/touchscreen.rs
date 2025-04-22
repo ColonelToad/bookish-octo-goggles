@@ -1,20 +1,24 @@
-use sdl2::event::Event;
-use sdl2::mouse::MouseButton;
+use sdl2::{event::Event, mouse::MouseButton};
+use sdl2::EventPump;
 use crate::input::InputEvent;
 
-pub struct TouchscreenInput;
+pub struct TouchscreenInput<'a> {
+    event_pump: &'a mut EventPump,
+}
 
-impl TouchscreenInput {
-    pub fn poll() -> Vec<InputEvent> {
-        let mut events = vec![];
-        let sdl_context = sdl2::init().unwrap();
-        let mut event_pump = sdl_context.event_pump().unwrap();
+impl<'a> TouchscreenInput<'a> {
+    pub fn new(event_pump: &'a mut EventPump) -> Self {
+        Self { event_pump }
+    }
 
-        for event in event_pump.poll_iter() {
-            if let Event::MouseButtonDown { x, y, mouse_btn: MouseButton::Left, .. } = event { 
+    pub fn poll(&mut self) -> Vec<InputEvent> {
+        let mut events = Vec::new();
+        for event in self.event_pump.poll_iter() {
+            if let Event::MouseButtonDown { x, y, mouse_btn: MouseButton::Left, .. } = event {
                 events.push(InputEvent::Touch(x, y));
             }
         }
+
         events
     }
 }
